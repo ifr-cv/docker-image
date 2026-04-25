@@ -39,3 +39,5 @@ jobs:
           tags: |
             ${{ secrets.TENCENT_CLOUD_REGISTRY }}/ws-ifr/ifr-ros2-base:latest
             ${{ secrets.TENCENT_CLOUD_REGISTRY }}/ws-ifr/ifr-ros2-base:${{ steps.vars.outputs.tag }}
+          cache-from: type=registry,ref=${{ secrets.TENCENT_CLOUD_REGISTRY }}/ws-ifr/ifr-ros2-base:cache
+          cache-to: type=registry,ref=${{ secrets.TENCENT_CLOUD_REGISTRY }}/ws-ifr/ifr-ros2-base:cache,mode=max
