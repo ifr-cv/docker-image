@@ -62,7 +62,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y \
     unzip \
     && rm -rf /var/lib/apt/lists/*
 
-# ===== 安装 GCC 13.2.0 =====
+# ===== 安装 GCC 13 =====
 # 添加 Ubuntu Toolchain PPA（提供最新 GCC）
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y software-properties-common && \
@@ -76,15 +76,15 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 
-# ===== 安装 Clangd 17.0.3 =====
-# 下载 LLVM 官方为 Ubuntu 20.04 预编译的二进制包
+# ===== 安装 Clangd 22.1.4 =====
 RUN cd /tmp && \
-    wget -q https://github.com/llvm/llvm-project/releases/download/llvmorg-17.0.3/clang+llvm-17.0.3-x86_64-linux-gnu-ubuntu-20.04.tar.xz && \
-    tar -xf clang+llvm-17.0.3-x86_64-linux-gnu-ubuntu-20.04.tar.xz && \
-    # 移动至 /opt 目录并建立软链接
-    mv clang+llvm-17.0.3-x86_64-linux-gnu-ubuntu-20.04 /opt/llvm-17.0.3 && \
-    update-alternatives --install /usr/bin/clangd clangd /opt/llvm-17.0.3/bin/clangd 100 && \
-    rm -f clang+llvm-17.0.3-x86_64-linux-gnu-ubuntu-20.04.tar.xz
+    wget -q https://github.com/llvm/llvm-project/releases/download/llvmorg-22.1.4/LLVM-22.1.4-Linux-X64.tar.xz && \
+    tar -xf LLVM-22.1.4-Linux-X64.tar.xz && \
+    mv LLVM-22.1.4-Linux-X64 /opt/llvm-22.1.4 && \
+    update-alternatives --install /usr/bin/clangd clangd /opt/llvm-22.1.4/bin/clangd 100 && \
+    update-alternatives --install /usr/bin/clang clang /opt/llvm-22.1.4/bin/clang 100 && \
+    update-alternatives --install /usr/bin/clang++ clang++ /opt/llvm-22.1.4/bin/clang++ 100 && \
+    rm -f LLVM-22.1.4-Linux-X64.tar.xz
 
 # ===== OpenCV 4.13.0 + contrib =====
 RUN cd /tmp && \

@@ -4,9 +4,9 @@ GitHub Actions 自动构建 Docker 镜像并推送到腾讯云容器镜像服务
 
 ## 镜像列表
 
-| 镜像            | 说明                             | 路径                    | 最新                                                 |
-| --------------- | -------------------------------- | ----------------------- | ---------------------------------------------------- |
-| `ifr-ros2-base` | ROS2 Foxy + OpenCV 4.13 + Eigen3 | `docker/ifr-ros2-base/` | `ccr.ccs.tencentyun.com/ws-ifr/ifr-ros2-base:latest` |
+| 镜像            | 说明                                                                      | 路径                    | 最新                                                 |
+| --------------- | ------------------------------------------------------------------------- | ----------------------- | ---------------------------------------------------- |
+| `ifr-ros2-base` | ROS2 Foxy <br/> OpenCV 4.13 <br/> Eigen3 <br/> GCC 13 <br/> Clangd 22.1.4 | `docker/ifr-ros2-base/` | `ccr.ccs.tencentyun.com/ws-ifr/ifr-ros2-base:latest` |
 
 ## 仓库地址
 
