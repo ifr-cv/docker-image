@@ -3,13 +3,13 @@ FROM ros:foxy-ros-base
 
 LABEL maintainer="yuanlu"
 
-# ===== 1. 配置 apt 清华源 =====
+# ===== 配置 apt 清华源 =====
 RUN sed -i 's|http://.*.ubuntu.com|https://mirrors.tuna.tsinghua.edu.cn|g' /etc/apt/sources.list && \
     sed -i 's|http://security.ubuntu.com|https://mirrors.tuna.tsinghua.edu.cn|g' /etc/apt/sources.list && \
     sed -i 's|http://packages.ros.org|https://mirrors.tuna.tsinghua.edu.cn/ros|g' /etc/apt/sources.list.d/ros2-latest.list || true && \
     apt-get update
 
-# ===== 2. 安装基础工具 =====
+# ===== 安装基础工具 =====
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
     sudo \
     build-essential \
@@ -22,15 +22,15 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
     pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
-# ===== 3. 配置 sudo 免密 =====
+# ===== 配置 sudo 免密 =====
 RUN echo "ALL ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/nopasswd-all && \
     chmod 440 /etc/sudoers.d/nopasswd-all
 
-# ===== 4. 配置 pip3 清华源 =====
+# ===== 配置 pip3 清华源 =====
 RUN pip3 config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple && \
     pip3 config set global.trusted-host pypi.tuna.tsinghua.edu.cn
 
-# ===== 5. 创建用户 =====
+# ===== 创建用户 =====
 ARG USER_ID=1000
 ARG GROUP_ID=1000
 ARG USERNAME=ifr
@@ -38,13 +38,10 @@ ARG USERNAME=ifr
 RUN groupadd -g ${GROUP_ID} ${USERNAME} && \
     useradd -m -u ${USER_ID} -g ${GROUP_ID} -s /bin/bash ${USERNAME}
 
-# ===== 6. OpenCV 4.13.0 + contrib 从 GitHub 拉取并编译安装 =====
-# OpenCV 源码和 contrib 模块从 GitHub Release 直接下载
-RUN cd /tmp && \
-    wget -q -O opencv-4.13.0.zip https://github.com/opencv/opencv/archive/4.13.0.zip && \
-    wget -q -O opencv_contrib-4.13.0.zip https://github.com/opencv/opencv_contrib/archive/4.13.0.zip
 
-# 安装 OpenCV 编译依赖（apt 通过清华源联网安装）
+
+
+# 安装 OpenCV 编译依赖
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y \
     libgtk-3-dev \
     libavcodec-dev \
@@ -61,11 +58,38 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y \
     libjpeg-dev \
     libpng-dev \
     libtiff-dev \
+    libeigen3-dev \
     unzip \
     && rm -rf /var/lib/apt/lists/*
 
-# 解压并编译安装 OpenCV
+# ===== 安装 GCC 13.2.0 =====
+# 添加 Ubuntu Toolchain PPA（提供最新 GCC）
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
+    apt-get install -y software-properties-common && \
+    add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
+    apt-get update && \
+    apt-get install -y gcc-13 g++-13 && \
+    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 100 && \
+    update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-13 100 && \
+    update-alternatives --install /usr/bin/cc cc /usr/bin/gcc-13 100 && \
+    update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-13 100 && \
+    rm -rf /var/lib/apt/lists/*
+
+
+# ===== 安装 Clangd 17.0.3 =====
+# 下载 LLVM 官方为 Ubuntu 20.04 预编译的二进制包
 RUN cd /tmp && \
+    wget -q https://github.com/llvm/llvm-project/releases/download/llvmorg-17.0.3/clang+llvm-17.0.3-x86_64-linux-gnu-ubuntu-20.04.tar.xz && \
+    tar -xf clang+llvm-17.0.3-x86_64-linux-gnu-ubuntu-20.04.tar.xz && \
+    # 移动至 /opt 目录并建立软链接
+    mv clang+llvm-17.0.3-x86_64-linux-gnu-ubuntu-20.04 /opt/llvm-17.0.3 && \
+    update-alternatives --install /usr/bin/clangd clangd /opt/llvm-17.0.3/bin/clangd 100 && \
+    rm -f clang+llvm-17.0.3-x86_64-linux-gnu-ubuntu-20.04.tar.xz
+
+# ===== OpenCV 4.13.0 + contrib =====
+RUN cd /tmp && \
+    wget -q -O opencv-4.13.0.zip https://github.com/opencv/opencv/archive/4.13.0.zip && \
+    wget -q -O opencv_contrib-4.13.0.zip https://github.com/opencv/opencv_contrib/archive/4.13.0.zip && \
     unzip -q opencv-4.13.0.zip && \
     unzip -q opencv_contrib-4.13.0.zip && \
     mkdir -p opencv-4.13.0/build && cd opencv-4.13.0/build && \
@@ -93,16 +117,10 @@ RUN cd /tmp && \
     ldconfig && \
     cd /tmp && rm -rf opencv-4.13.0 opencv_contrib-4.13.0 opencv-4.13.0.zip opencv_contrib-4.13.0.zip
 
-# ===== 7. Eigen3 (在线安装，体积小，走清华源很快) =====
-# Eigen3 是纯头文件库，可以直接 apt 安装
-RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y \
-    libeigen3-dev \
-    && rm -rf /var/lib/apt/lists/*
 
-# ===== 8. 工作目录 =====
+# ===== 工作目录 =====
 WORKDIR /home/ifr/ifr-ros2
 
-# 默认以 ifr 用户运行
 USER ${USERNAME}
 
 CMD ["bash"]
