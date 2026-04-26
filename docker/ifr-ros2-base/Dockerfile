@@ -133,7 +133,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y \
     ros-foxy-nmea-msgs \
     ros-foxy-geographic-msgs \
     ros-foxy-diagnostic-updater \
-    ros-foxy-localization \
+    ros-foxy-robot-localization \
     && rm -rf /var/lib/apt/lists/*
 
 
