@@ -6,7 +6,7 @@ LABEL maintainer="yuanlu"
 # ===== 配置 apt 清华源 =====
 RUN sed -i 's|http://.*.ubuntu.com|https://mirrors.tuna.tsinghua.edu.cn|g' /etc/apt/sources.list && \
     sed -i 's|http://security.ubuntu.com|https://mirrors.tuna.tsinghua.edu.cn|g' /etc/apt/sources.list && \
-    sed -i 's|http://packages.ros.org|https://mirrors.tuna.tsinghua.edu.cn/ros|g' /etc/apt/sources.list.d/ros2-latest.list || true && \
+    (test -f /etc/apt/sources.list.d/ros2-latest.list && sed -i 's|http://packages.ros.org|https://mirrors.tuna.tsinghua.edu.cn/ros|g' /etc/apt/sources.list.d/ros2-latest.list || true) && \
     apt-get update
 
 # ===== 安装基础工具 =====
@@ -116,6 +116,25 @@ RUN cd /tmp && \
     make install && \
     ldconfig && \
     cd /tmp && rm -rf opencv-4.13.0 opencv_contrib-4.13.0 opencv-4.13.0.zip opencv_contrib-4.13.0.zip
+
+
+# ===== 安装 ROS / 系统依赖包 =====
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y \
+    libzmq3-dev \
+    libgraphicsmagick++1-dev \
+    libompl-dev \
+    libceres-dev \
+    ros-foxy-gazebo-ros-pkgs \
+    ros-foxy-octomap-msgs \
+    ros-foxy-test-msgs \
+    ros-foxy-behaviortree-cpp-v3 \
+    ros-foxy-pcl-ros \
+    ros-foxy-octomap-ros \
+    ros-foxy-nmea-msgs \
+    ros-foxy-geographic-msgs \
+    ros-foxy-diagnostic-updater \
+    ros-foxy-localization \
+    && rm -rf /var/lib/apt/lists/*
 
 
 # ===== 工作目录 =====
